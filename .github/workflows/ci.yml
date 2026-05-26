@@ -1,0 +1,84 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: build + test (macOS)
+    runs-on: macos-26
+    env:
+      XCODE_PATH: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Show toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Build
+        run: swift build -v
+
+      - name: Test
+        run: swift test --parallel
+
+  linux:
+    name: build + test (Linux, swift:latest)
+    runs-on: ubuntu-latest
+    container:
+      image: swift:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build
+        run: swift build -v
+
+      - name: Test
+        run: swift test --parallel
+
+  lint:
+    name: swift-format lint
+    runs-on: macos-26
+    env:
+      XCODE_PATH: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Lint
+        run: swift format lint --recursive --strict Sources Tests Package.swift
+
+  benchmarks:
+    name: benchmarks (release, smoke)
+    runs-on: macos-26
+    env:
+      XCODE_PATH: /Applications/Xcode_26.5.app/Contents/Developer
+    # Benchmarks have machine-sensitive thresholds. Run them on macOS for
+    # signal but do not gate merges on the result yet -- surface failures
+    # for review rather than blocking the build.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Run benchmarks
+        run: swift run -c release LifetimeBenchmarks
