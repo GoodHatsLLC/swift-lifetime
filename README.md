@@ -100,24 +100,9 @@ to wait on.
 
 ## Installation
 
-`swift-lifetime` becomes stable at `1.0.0`. From that release forward,
-the public API is intended to remain source-compatible; future changes
-should be additive or fixes, with deprecations used before removals.
-
-After the `1.0.0` tag is published, prefer a version requirement:
-
 ```swift
 dependencies: [
   .package(url: "https://github.com/GoodHatsLLC/swift-lifetime.git", from: "1.0.0")
-]
-```
-
-Track `main` explicitly only while waiting for the release tag or when
-you need unreleased changes:
-
-```swift
-dependencies: [
-  .package(url: "https://github.com/GoodHatsLLC/swift-lifetime.git", branch: "main")
 ]
 ```
 
