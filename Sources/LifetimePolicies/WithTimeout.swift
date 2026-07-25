@@ -107,6 +107,13 @@ public func withTimeout<Return: Sendable>(
 ///   - operation: The operation to execute.
 /// - Returns: The result of the operation, if any.
 /// - Throws: `WithTimeoutError` if the operation times out, fails, or the surrounding task is cancelled.
+///
+/// Disfavored so a *non-throwing* operation resolves to the overload above, which
+/// throws the narrower `TimeoutOnlyError`. A non-throwing closure satisfies this
+/// one too (with `Failure == Never`), and from Swift 6.4 the compiler reports the
+/// call as ambiguous rather than picking one. Genuinely throwing operations are
+/// unaffected: this remains their only viable candidate.
+@_disfavoredOverload
 public func withTimeout<Return: Sendable, Failure: Error & Sendable>(
   of duration: Duration,
   file: StaticString = #file,
